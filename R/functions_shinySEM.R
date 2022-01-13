@@ -14,8 +14,11 @@ label_syntax_fun <- function(model){
   }
 
   vars <- parTab[parTab$op == "~~" & parTab$lhs == parTab$rhs, ]
+  LVs <- parTab[parTab$op == "=~", "lhs"] # check if variance belongs to a latent or observed variable
   if(nrow(vars) > 0){
-    vars[, "label"] <- paste0("v", 1:nrow(vars))
+    OVvars <-
+    vars[!vars[, "lhs"] %in% LVs, "label"] <- paste0("e", 1:nrow(vars[!vars[, "lhs"] %in% LVs, ])) # observed variances
+    vars[vars[, "lhs"] %in% LVs, "label"] <- paste0("v", 1:nrow(vars[vars[, "lhs"] %in% LVs, ])) # latent variances
   }
 
   corr <- parTab[parTab$op == "~~" & parTab$lhs != parTab$rhs, ]
