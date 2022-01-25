@@ -10,111 +10,214 @@ source("./functions_shinySEM.R")
 
 ui <- fluidPage(
 
-    titlePanel("Shiny SEM"),
+  titlePanel("Shiny SEM"),
 
-    sidebarLayout(
-        sidebarPanel(
-            # upload data
-            fileInput("file", "Upload your data file (CSV), including variable names.",
-                      multiple = FALSE,
-                      accept = c("text/csv",
-                                 "text/comma-separated-values,text/plain",
-                                 ".csv")
-                      ),
-            radioButtons("sep", "Which character separates different fields?",
-                         choices = c(Comma = ",",
-                                     Semicolon = ";",
-                                     Tab = "\t"),
-                         selected = ","),
+  sidebarLayout(
+    sidebarPanel(
+      # model choice
+      radioButtons("modtype", "Select which model you would like to see.",
+                   choices = c(#"Regression model (example)",
+                     #"Path model (example)",
+                     "Exploratory factor model (example)",
+                     "Confirmatory factor model (example)",
+                     "Structural equation model (example)",
+                     "I want to visualise my own model"),
+                   selected = "Structural equation model (example)"),
 
-            tags$hr(),
+      tags$hr(),
 
-            # specify model
-            textAreaInput("model", p("Specify the model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html")),
-                          value = "
-                          # latent variable definitions
-                            ind60 =~ x1 + x2 + x3
-                            dem60 =~ y1 + y2 + y3 + y4
-                            dem65 =~ y5 + y6 + y7 + y8
-                          # regressions
-                            dem60 ~ ind60
-                            dem65 ~ ind60 + dem60
-                          # residual correlations
-                            y1 ~~ y5
-                            y2 ~~ y4 + y6
-                            y3 ~~ y7
-                            y4 ~~ y8
-                            y6 ~~ y8 ",
-                           rows = 15),
+      uiOutput("modsyntax"),
 
-            # plotting options
-            selectInput("layout", "Which layout to use for the model plot?",
-                         choices = c("Tree" = "layout_as_tree",
-                                     "Star" = "layout_as_star",
-                                     "Circle" = "layout_as_circle",
-                                     "Nice" = "layout_nicely",
-                                     "Grid" = "layout_on_grid",
-                                     "Random" = "layout_randomly"),
-                         selected = "layout_as_tree"),
-        ),
+      # plotting options
+      selectInput("layout", "Which layout to use for the model plot?",
+                  choices = c("Tree" = "layout_as_tree",
+                              "Star" = "layout_as_star",
+                              "Circle" = "layout_as_circle",
+                              "Nice" = "layout_nicely",
+                              "Grid" = "layout_on_grid",
+                              "Random" = "layout_randomly"),
+                  selected = "layout_as_tree"),
+    ),
 
-        mainPanel(
-            plotlyOutput("mod.plot"),
+    mainPanel(
 
-            textOutput("info")
-        )
+      plotlyOutput("mod.plot"),
+
+      textOutput("info")
+
     )
+  )
 )
 
 
 server <- function(input, output) {
 
-    # read data file
-    dat <- reactive({
-        req(input$file)
+  # Show additional input when the user want to visualise their own model
+  output$modsyntax <- renderUI({
 
-        read.csv(input$file$datapath,
-                 sep = input$sep)
-    })
+    if(input$modtype == "Regression model (example)"){
 
-    # add labels to the model and fit using lavaan
-    fit <- reactive({
-        req(input$model)
+      tagList(
 
-        mod.lbl <- label_syntax_fun(toString(input$model))
-        #mod.fit <- sem(mod.lbl, data = dat())
-        mod.fit <- sem(mod.lbl, data = PoliticalDemocracy) #TODO: use input data instead of placeholder
-    })
+        # Example regression model
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+                      value = "# regressions
+t1 ~ x1 + x2",
+                      rows = 15)
+      )
 
-    # plot the model
-    # Note: custom layout not working yet
-    output$mod.plot <- renderPlotly({
-        ggplotly(plot_fun(fit(), layout = input$layout), tooltip = "text")
-    })
+    } else if(input$modtype == "Exploratory factor model (example)") {
 
-    click_data <- reactive({
-        click <- event_data("plotly_click")$customdata
-    })
+      tagList(
 
-    output$clicks <- renderPrint({
-        data.frame(click_data())
-    })
+        # Example EFA
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+                      value = "# latent variable definitions
+visual  =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+textual =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
+speed   =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9",
+                      rows = 15)
+      )
 
-    output$info <- renderText({
-        if(is.null(click_data())){
-            print("Please select a parameter in the model by clicking on one of the labels")
-        } else if(grepl("l", click_data()) == TRUE){ # loadings
-            print("This is a factor loading. A factor loading represents the presumed causal effect of the factor on the observed score. A factor loading can be reported in unstandardized or standardized form and interpreted similarly as a regression coefficient.")
-        } else if(grepl("v", click_data()) == TRUE){ # latent variable variance
-          print("This is a latent variable variance term. Just like observed variables, scores on latent variables vary between the units of observation and this variation is captured by the latent variable variance term. However, unlike observed variables, latent variables do not have a natural scale. Therefore, each latent variable must be assigned a scale in order to identify and thus be able to estimate the model. The scale of a latent variable can be set either by fixing the unstandardized factor loading for one indicator to 1 (unit loading identification) or by fixing the latent variable variance term to 1 (unit variance identification).")
-        } else if(grepl("e", click_data()) == TRUE){ # measurement error
-            print("This is a measurement error term. The variance for each observed score can be split into two components: a common and unique component. The common component refers to the part of the variance that is explained by the factors to which the indicator belongs. The unique variance, on the other hand, is represented by the measurement error and reflects all other sources of variation that are not explained by the model. This includes random error (score unreliability) and all sources of systematic variance not due to the factors.")
-        } else if(grepl("r", click_data()) == TRUE){ # correlations
-            print("This is a correlation. A correlation reflects the assumption that two variables have something in common that is not explicitly represented in the model. Correlations are often included between factors in a confirmatory factor model and sometimes between measurement errors to reflect that indicators are associated beyond the association that can be explained by the underlying factors. In case of correlated measurement errors, we speak of a nonstandard factor model.")
-        } else if(grepl("b", click_data()) == TRUE){ # structural regression parameters
-            print("This is a structural regression parameter. A structural regression parameter represents the presumed causal effect between two latent variables, or between a latent and observed variable. A structural regression parameter can be reported in unstandardized or standardized form and interpreted similarly as a regression coefficient.")
-        }
-    })
+    } else if(input$modtype == "Confirmatory factor model (example)") {
+
+      tagList(
+
+        # Example CFA
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+                      value = "# latent variable definitions
+visual  =~ x1 + x2 + x3
+textual =~ x4 + x5 + x6
+speed   =~ x7 + x8 + x9",
+                      rows = 15)
+      )
+    } else if(input$modtype == "Structural equation model (example)") {
+
+      tagList(
+
+      # Example SEM
+      textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+                    value = "# latent variable definitions
+ind60 =~ x1 + x2 + x3
+dem60 =~ y1 + y2 + y3 + y4
+dem65 =~ y5 + y6 + y7 + y8
+# regressions
+dem60 ~ ind60
+dem65 ~ ind60 + dem60
+# residual correlations
+y1 ~~ y5
+y2 ~~ y4 + y6
+y3 ~~ y7
+y4 ~~ y8
+y6 ~~ y8 ",
+                    rows = 15)
+      )
+    } else if (input$modtype == "I want to visualise my own model") {
+
+      tagList(
+        # upload data
+        fileInput("file", "Upload your data file (CSV), including variable names.",
+                  multiple = FALSE,
+                  accept = c("text/csv",
+                             "text/comma-separated-values,text/plain",
+                             ".csv")
+        ),
+        radioButtons("sep", "Which character separates different fields?",
+                     choices = c(Comma = ",",
+                                 Semicolon = ";",
+                                 Tab = "\t"),
+                     selected = ","),
+
+        # specify model
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+                      value = "",
+                      rows = 15)
+      )
+
+    }
+  })
+
+  # read data file or use example data
+  dat <- reactiveValues()
+
+  observe({
+    if(input$modtype == "Regression model (example)"){
+      dat$df <- Demo.growth
+    } else if(input$modtype == "Exploratory factor model (example)"){
+      dat$df <- HolzingerSwineford1939
+    } else if(input$modtype == "Confirmatory factor model (example)"){
+      dat$df <- HolzingerSwineford1939
+    } else if(input$modtype == "Structural equation model (example)") {
+      dat$df <- PoliticalDemocracy
+    } else if(input$modtype == "I want to visualise my own model") {
+      req(input$file)
+      dat$df <- read.csv(input$file$datapath,
+               sep = input$sep)
+    }
+  })
+
+  # add labels to the model and fit using lavaan
+  fitobj <- reactive({
+    validate(
+      need(input$model, "Please specify the model")
+    )
+    mod.lbl <- label_syntax_fun(toString(input$model))
+    sem(mod.lbl, data = dat$df)
+  })
+
+  # plot the model
+  # Note: custom layout not working yet
+  output$mod.plot <- renderPlotly({
+    req(fitobj(), input$layout)
+    ggplotly(plot_fun(fitobj(), layout = input$layout), tooltip = "text")
+  })
+
+  # let the user click a parameter for info
+  click_data <- reactive({
+    click <- event_data("plotly_click")$customdata
+  })
+
+  output$clicks <- renderPrint({
+    data.frame(click_data())
+  })
+
+  output$info <- renderText({
+    if(is.null(click_data())){
+      print("Please select a parameter in the model by clicking on one of the labels")
+    } else if(grepl("l", click_data()) == TRUE){ # loadings
+      paste0("Parameter ", click_data(), ": This is a factor loading.
+              A factor loading represents the presumed causal effect of the factor on the observed score.
+              A factor loading can be reported in unstandardized or standardized form and interpreted similarly
+              as a regression coefficient.")
+    } else if(grepl("v", click_data()) == TRUE){ # latent variable variance
+      paste0("Parameter ", click_data(), ": This is a latent variable variance term.
+             Just like observed variables, scores on latent variables vary between the units of observation and
+             this variation is captured by the latent variable variance term. However, unlike observed variables,
+             latent variables do not have a natural scale. Therefore, each latent variable must be assigned a scale
+             in order to identify and thus be able to estimate the model. The scale of a latent variable can be set
+             either by fixing the unstandardized factor loading for one indicator to 1 (unit loading identification)
+             or by fixing the latent variable variance term to 1 (unit variance identification).")
+    } else if(grepl("e", click_data()) == TRUE){ # measurement error
+      paste0("Parameter ", click_data(), ": This is a measurement error term.
+             The variance for each observed score can be split into two components: a common and unique component.
+             The common component refers to the part of the variance that is explained by the factors to which the indicator belongs.
+             The unique variance, on the other hand, is represented by the measurement error and reflects all other sources of
+             variation that are not explained by the model. This includes random error (score unreliability) and all sources of
+             systematic variance not due to the factors.")
+    } else if(grepl("r", click_data()) == TRUE){ # correlations
+      paste0("Parameter ", click_data(), ": This is a correlation.
+             A correlation reflects the assumption that two variables have something in common that is not explicitly
+             represented in the model. Correlations are often included between factors in a confirmatory factor model
+             and sometimes between measurement errors to reflect that indicators are associated beyond the association
+             that can be explained by the underlying factors. In case of correlated measurement errors, we speak of a
+             nonstandard factor model.")
+    } else if(grepl("b", click_data()) == TRUE){ # structural regression parameters
+      paste0("Parameter ", click_data(), ": This is a structural regression parameter.
+             A structural regression parameter represents the presumed causal effect between two latent variables,
+             or between a latent and observed variable. A structural regression parameter can be reported in unstandardized
+             or standardized form and interpreted similarly as a regression coefficient.")
+    }
+  })
 
 }
 
