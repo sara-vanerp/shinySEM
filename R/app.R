@@ -10,12 +10,12 @@ source("./functions_shinySEM.R")
 
 ui <- fluidPage(
 
-  titlePanel("Shiny SEM"),
+  titlePanel(HTML(paste(h1("Shiny SEM"), h5("Developed by:", a("Sara van Erp", href = "https://saravanerp.com") )))),
 
   sidebarLayout(
     sidebarPanel(
       # model choice
-      radioButtons("modtype", "Select which model you would like to see.",
+      radioButtons("modtype", "Select which model you would like to visualise.",
                    choices = c(#"Regression model (example)",
                      #"Path model (example)",
                      "Exploratory factor model (example)",
@@ -43,7 +43,7 @@ ui <- fluidPage(
 
       plotlyOutput("mod.plot"),
 
-      textOutput("info")
+      uiOutput("info")
 
     )
   )
@@ -181,41 +181,41 @@ y6 ~~ y8 ",
     data.frame(click_data())
   })
 
-  output$info <- renderText({
+  output$info <- renderUI({
     if(is.null(click_data())){
       print("Please select a parameter in the model by clicking on one of the labels")
     } else if(grepl("l", click_data()) == TRUE){ # loadings
-      paste0("Parameter ", click_data(), ": This is a factor loading.
+      HTML(paste0(em("Parameter ", click_data()), "<br> This is a factor loading.
               A factor loading represents the presumed causal effect of the factor on the observed score.
               A factor loading can be reported in unstandardized or standardized form and interpreted similarly
-              as a regression coefficient.")
+              as a regression coefficient."))
     } else if(grepl("v", click_data()) == TRUE){ # latent variable variance
-      paste0("Parameter ", click_data(), ": This is a latent variable variance term.
+      HTML(paste0(em("Parameter ", click_data()), "<br> This is a latent variable variance term.
              Just like observed variables, scores on latent variables vary between the units of observation and
              this variation is captured by the latent variable variance term. However, unlike observed variables,
              latent variables do not have a natural scale. Therefore, each latent variable must be assigned a scale
              in order to identify and thus be able to estimate the model. The scale of a latent variable can be set
              either by fixing the unstandardized factor loading for one indicator to 1 (unit loading identification)
-             or by fixing the latent variable variance term to 1 (unit variance identification).")
+             or by fixing the latent variable variance term to 1 (unit variance identification)."))
     } else if(grepl("e", click_data()) == TRUE){ # measurement error
-      paste0("Parameter ", click_data(), ": This is a measurement error term.
+      HTML(paste0(em("Parameter ", click_data()), "<br> This is a measurement error term.
              The variance for each observed score can be split into two components: a common and unique component.
              The common component refers to the part of the variance that is explained by the factors to which the indicator belongs.
              The unique variance, on the other hand, is represented by the measurement error and reflects all other sources of
              variation that are not explained by the model. This includes random error (score unreliability) and all sources of
-             systematic variance not due to the factors.")
+             systematic variance not due to the factors."))
     } else if(grepl("r", click_data()) == TRUE){ # correlations
-      paste0("Parameter ", click_data(), ": This is a correlation.
+      HTML(paste0(em("Parameter ", click_data()), "<br> This is a correlation.
              A correlation reflects the assumption that two variables have something in common that is not explicitly
              represented in the model. Correlations are often included between factors in a confirmatory factor model
              and sometimes between measurement errors to reflect that indicators are associated beyond the association
              that can be explained by the underlying factors. In case of correlated measurement errors, we speak of a
-             nonstandard factor model.")
+             nonstandard factor model."))
     } else if(grepl("b", click_data()) == TRUE){ # structural regression parameters
-      paste0("Parameter ", click_data(), ": This is a structural regression parameter.
+      HTML(paste0(em("Parameter ", click_data()), "<br> This is a structural regression parameter.
              A structural regression parameter represents the presumed causal effect between two latent variables,
              or between a latent and observed variable. A structural regression parameter can be reported in unstandardized
-             or standardized form and interpreted similarly as a regression coefficient.")
+             or standardized form and interpreted similarly as a regression coefficient."))
     }
   })
 
