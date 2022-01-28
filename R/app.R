@@ -36,7 +36,7 @@ ui <- fluidPage(
                               "Nice" = "layout_nicely",
                               "Grid" = "layout_on_grid",
                               "Random" = "layout_randomly"),
-                  selected = "layout_as_tree"),
+                  selected = "layout_as_tree")
     ),
 
     mainPanel(
@@ -166,10 +166,9 @@ y6 ~~ y8 ",
   })
 
   # plot the model
-  # Note: custom layout not working yet
   output$mod.plot <- renderPlotly({
     req(fitobj(), input$layout)
-    ggplotly(plot_fun(fitobj(), layout = input$layout), tooltip = "text")
+    ggplotly(plot(plot_fun(fitobj(), custom.lay = input$layout), tooltip = "text"))
   })
 
   # let the user click a parameter for info
