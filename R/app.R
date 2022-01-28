@@ -28,15 +28,6 @@ ui <- fluidPage(
 
       uiOutput("modsyntax"),
 
-      # plotting options
-      selectInput("layout", "Which layout to use for the model plot?",
-                  choices = c("Tree" = "layout_as_tree",
-                              "Star" = "layout_as_star",
-                              "Circle" = "layout_as_circle",
-                              "Nice" = "layout_nicely",
-                              "Grid" = "layout_on_grid",
-                              "Random" = "layout_randomly"),
-                  selected = "layout_as_tree")
     ),
 
     mainPanel(
@@ -131,7 +122,17 @@ y6 ~~ y8 ",
         # specify model
         textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
                       value = "",
-                      rows = 15)
+                      rows = 15),
+
+        # plotting options
+        selectInput("layout", "Which layout to use for the model plot?",
+                    choices = c("Tree" = "layout_as_tree",
+                                "Star" = "layout_as_star",
+                                "Circle" = "layout_as_circle",
+                                "Nice" = "layout_nicely",
+                                "Grid" = "layout_on_grid",
+                                "Random" = "layout_randomly"),
+                    selected = "layout_as_tree")
       )
 
     }
@@ -165,10 +166,30 @@ y6 ~~ y8 ",
     sem(mod.lbl, data = dat$df)
   })
 
+  # specify layout
+  lay <- reactiveValues()
+
+  observe({
+    if(input$modtype == "Exploratory factor model (example)"){
+      lay$cs <- get_layout("", "", "visual","","textual","","speed","", "",
+                   "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", rows = 2)
+    } else if(input$modtype == "Confirmatory factor model (example)"){
+      lay$cs <- get_layout("", "", "visual","","textual","","speed","", "",
+                  "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", rows = 2)
+    } else if(input$modtype == "Structural equation model (example)") {
+      lay$cs <- get_layout("", "", "", "", "", "", "ind60", "", "", "",
+                           "", "", "dem60", "", "", "", "dem65", "x1", "x2", "x3",
+                           "y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "", "", rows = 3)
+    } else if(input$modtype == "I want to visualise my own model") {
+      req(input$layout)
+      lay$cs <- input$layout
+    }
+  })
+
   # plot the model
   output$mod.plot <- renderPlotly({
-    req(fitobj(), input$layout)
-    ggplotly(plot(plot_fun(fitobj(), custom.lay = input$layout), tooltip = "text"))
+    req(fitobj(), lay$cs, input$modtype)
+    ggplotly(plot(plot_fun(fitobj(), custom.lay = lay$cs, modtype = input$modtype), tooltip = "text"))
   })
 
   # let the user click a parameter for info

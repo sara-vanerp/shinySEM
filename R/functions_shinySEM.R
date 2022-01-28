@@ -36,8 +36,13 @@ label_syntax_fun <- function(model){
 }
 
 ## Function to plot the model using tidySEM
-plot_fun <- function(fit, custom.lay){
-  lay <- get_layout(fit, layout_algorithm = custom.lay)
+plot_fun <- function(fit, custom.lay, modtype){
+  if(modtype == "I want to visualise my own model"){
+    lay <- get_layout(fit, layout_algorithm = custom.lay)
+  } else{
+    lay <- custom.lay
+  }
+
   prep <- prepare_graph(fit, layout = lay)
 
   prep$edges$geom_text <- TRUE # to be able to record and use the labels
