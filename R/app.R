@@ -51,7 +51,7 @@ server <- function(input, output) {
       tagList(
 
         # Example regression model
-        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html")),
                       value = "# regressions
 t1 ~ x1 + x2",
                       rows = 15)
@@ -62,7 +62,7 @@ t1 ~ x1 + x2",
       tagList(
 
         # Example EFA
-        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html")),
                       value = "# latent variable definitions
 visual  =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
 textual =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9
@@ -75,7 +75,7 @@ speed   =~ x1 + x2 + x3 + x4 + x5 + x6 + x7 + x8 + x9",
       tagList(
 
         # Example CFA
-        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html")),
                       value = "# latent variable definitions
 visual  =~ x1 + x2 + x3
 textual =~ x4 + x5 + x6
@@ -87,7 +87,7 @@ speed   =~ x7 + x8 + x9",
       tagList(
 
       # Example SEM
-      textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+      textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html")),
                     value = "# latent variable definitions
 ind60 =~ x1 + x2 + x3
 dem60 =~ y1 + y2 + y3 + y4
@@ -107,7 +107,7 @@ y6 ~~ y8 ",
 
       tagList(
         # upload data
-        fileInput("file", "Upload your data file (CSV), including variable names.",
+        fileInput("file", "Upload your data file (CSV), including variable names. Make sure the variable names correspond to the names used in the model specification.",
                   multiple = FALSE,
                   accept = c("text/csv",
                              "text/comma-separated-values,text/plain",
@@ -120,7 +120,7 @@ y6 ~~ y8 ",
                      selected = ","),
 
         # specify model
-        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html"), "and the same variable names as in the uploaded data file"),
+        textAreaInput("model", p("Specify your model using", a("lavaan syntax.", href = "https://lavaan.ugent.be/index.html")),
                       value = "",
                       rows = 15),
 
@@ -228,7 +228,7 @@ y6 ~~ y8 ",
       HTML(paste0(em("Parameter ", click_data()), "<br> This is a correlation.
              A correlation reflects the assumption that two variables have something in common that is not explicitly
              represented in the model. Correlations are often included between factors in a confirmatory factor model
-             and sometimes between measurement errors to reflect that indicators are associated beyond the association
+             and sometimes between measurement errors to reflect that indicators are related beyond the association
              that can be explained by the underlying factors. In case of correlated measurement errors, we speak of a
              nonstandard factor model."))
     } else if(grepl("b", click_data()) == TRUE){ # structural regression parameters
