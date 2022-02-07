@@ -22,7 +22,7 @@ ui <- fluidPage(
                      "Confirmatory factor model (example)",
                      "Structural equation model (example)",
                      "I want to visualise my own model"),
-                   selected = "Structural equation model (example)"),
+                   selected = "Confirmatory factor model (example)"),
 
       tags$hr(),
 
@@ -124,15 +124,15 @@ y6 ~~ y8 ",
                       value = "",
                       rows = 15),
 
-        # plotting options
-        selectInput("layout", "Which layout to use for the model plot?",
-                    choices = c("Tree" = "layout_as_tree",
-                                "Star" = "layout_as_star",
-                                "Circle" = "layout_as_circle",
-                                "Nice" = "layout_nicely",
-                                "Grid" = "layout_on_grid",
-                                "Random" = "layout_randomly"),
-                    selected = "layout_as_tree")
+        # plotting options: does not work if a custom layout is supplied for own models, so just use the default layout for now
+       # selectInput("layout", "Which layout to use for the model plot?",
+      #              choices = c("Tree" = "layout_as_tree",
+      #                          "Star" = "layout_as_star",
+      #                          "Circle" = "layout_as_circle",
+      #                          "Nice" = "layout_nicely",
+      #                          "Grid" = "layout_on_grid",
+      #                          "Random" = "layout_randomly"),
+      #              selected = "layout_as_tree")
       )
 
     }
@@ -172,18 +172,18 @@ y6 ~~ y8 ",
   observe({
     if(input$modtype == "Exploratory factor model (example)"){
       lay$cs <- get_layout("", "", "visual","","textual","","speed","", "",
-                   "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", rows = 2)
+                           "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", rows = 2)
     } else if(input$modtype == "Confirmatory factor model (example)"){
       lay$cs <- get_layout("", "", "visual","","textual","","speed","", "",
-                  "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", rows = 2)
+                           "x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", rows = 2)
     } else if(input$modtype == "Structural equation model (example)") {
       lay$cs <- get_layout("", "", "", "", "", "", "ind60", "", "", "",
                            "", "", "dem60", "", "", "", "dem65", "x1", "x2", "x3",
                            "y1", "y2", "y3", "y4", "y5", "y6", "y7", "y8", "", "", rows = 3)
-    } else if(input$modtype == "I want to visualise my own model") {
-      req(input$layout)
-      lay$cs <- input$layout
-    }
+    } #else if(input$modtype == "I want to visualise my own model") { # does not work so removed this option for now
+      #req(input$layout)
+      #lay$cs <- input$layout
+    #}
   })
 
   # plot the model

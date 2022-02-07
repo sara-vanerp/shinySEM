@@ -38,7 +38,7 @@ label_syntax_fun <- function(model){
 ## Function to plot the model using tidySEM
 plot_fun <- function(fit, custom.lay, modtype){
   if(modtype == "I want to visualise my own model"){
-    lay <- get_layout(fit, layout_algorithm = custom.lay)
+    lay <- get_layout(fit)
   } else{
     lay <- custom.lay
   }
